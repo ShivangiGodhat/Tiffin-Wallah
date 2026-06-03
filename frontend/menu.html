@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Everyday Menu - Tiffin Wallah</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .menu-header {
+            padding: 150px 0 50px;
+            text-align: center;
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+        }
+        .menu-header h1 {
+            font-size: 3rem;
+            color: #d35400;
+            margin-bottom: 10px;
+        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 50px 0;
+        }
+        .menu-item {
+            background: #fff;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .menu-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        .menu-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .menu-details {
+            padding: 20px;
+        }
+        .menu-category {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: #e67e22;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .menu-title {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .menu-desc {
+            color: #7f8c8d;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        .menu-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        .menu-price {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #27ae60;
+        }
+        .add-to-cart {
+            background: #e67e22;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+        }
+        .add-to-cart:hover {
+            background: #d35400;
+        }
+        
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .menu-header {
+                padding: 120px 0 30px;
+            }
+            .menu-header h1 {
+                font-size: 2.4rem;
+            }
+            .menu-desc {
+                font-size: 0.95rem;
+            }
+            .menu-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .menu-footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .menu-price {
+                font-size: 1.15rem;
+            }
+            .search-box {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-scroll">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <i class="fas fa-utensils"></i>
+                <span>Tiffin Wallah</span>
+            </a>
+            <div class="nav-menu">
+                <a href="index.html">Home</a>
+                <a href="menu.html" class="active">Everyday Menu</a>
+                <a href="track-order.html">Track Order</a>
+                <a href="index.html#about">About</a>
+                <a href="index.html#contact">Contact</a>
+                <a href="checkout.html" class="cart-btn"><i class="fas fa-shopping-cart"></i> Cart <span id="cart-count"></span></a>
+                <a href="/login.html" class="account-btn"><i class="fas fa-user-circle"></i> <span class="account-label">Login/Signup</span></a>
+            </div>
+            <div class="mobile-menu-btn"></div>
+        </div>
+    </nav>
+
+    <header class="menu-header">
+        <div class="container">
+            <h1>Our Everyday Menu</h1>
+            <p>Fresh, home-cooked meals prepared daily just for you.</p>
+        </div>
+    </header>
+
+    <section class="section">
+        <div class="container">
+            <div class="menu-grid" id="menu-container">
+                <!-- Loading state -->
+                <p>Loading today's fresh menu...</p>
+            </div>
+        </div>
+    </section>
+
+    <div id="toast" class="toast">Item added to cart!</div>
+
+    <script>
+        // Cart state
+        let cart = JSON.parse(localStorage.getItem('tiffinCart')) || [];
+        updateCartCount();
+
+        async function fetchMenu() {
+            try {
+                const response = await fetch('/api/menu');
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderMenu(data.menu);
+                } else {
+                    document.getElementById('menu-container').innerHTML = '<p>Failed to load menu.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching menu:', error);
+                document.getElementById('menu-container').innerHTML = '<p>Server error while loading menu.</p>';
+            }
+        }
+
+        function renderMenu(menuItems) {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = ''; // Clear loading
+
+            menuItems.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'menu-item';
+                div.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}" class="menu-img">
+                    <div class="menu-details">
+                        <div class="menu-category">${item.category}</div>
+                        <h3 class="menu-title">${item.name}</h3>
+                        <p class="menu-desc">${item.description}</p>
+                        <div class="menu-footer">
+                            <div class="menu-price">₹${item.price}</div>
+                            <button class="add-to-cart">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+                const addButton = div.querySelector('.add-to-cart');
+                if (addButton) {
+                    addButton.addEventListener('click', () => addToCart(item.id, item.name, item.price));
+                }
+            });
+        }
+
+        function addToCart(id, name, price) {
+            const existingItem = cart.find(item => item.id === id);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ id, name, price, quantity: 1 });
+            }
+            
+            localStorage.setItem('tiffinCart', JSON.stringify(cart));
+            updateCartCount();
+            showToast();
+        }
+
+        function updateCartCount() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cart-count').innerText = count > 0 ? `(${count})` : '';
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.className = 'toast show';
+            setTimeout(() => { toast.className = toast.className.replace('show', ''); }, 3000);
+        }
+
+        // Initialize
+        fetchMenu();
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

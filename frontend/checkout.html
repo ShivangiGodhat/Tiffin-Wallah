@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Tiffin Wallah</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .checkout-header {
+            padding: 120px 0 30px;
+            text-align: center;
+            background: #f8f9fa;
+        }
+        .checkout-header h1 {
+            color: #2c3e50;
+        }
+        .checkout-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            padding: 40px 0;
+        }
+        .cart-section, .payment-section {
+            flex: 1;
+            min-width: 300px;
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .cart-item h4 {
+            margin: 0;
+            color: #34495e;
+        }
+        .cart-item p {
+            margin: 5px 0 0;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .qty-btn {
+            background: #eee;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .cart-total {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: right;
+            color: #2c3e50;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #34495e;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+        }
+        .payment-methods {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .payment-method {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .payment-method.active {
+            border-color: #e67e22;
+            background: #fff3e0;
+        }
+        .btn-pay {
+            background: #27ae60;
+            color: #fff;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-pay:hover {
+            background: #219a52;
+        }
+        .btn-pay:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        #success-message {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            background: #e8f8f5;
+            border-radius: 15px;
+            color: #1abc9c;
+        }
+        #success-message i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-scroll">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <i class="fas fa-utensils"></i>
+                <span>Tiffin Wallah</span>
+            </a>
+            <div class="nav-menu">
+                <a href="index.html">Home</a>
+                <a href="menu.html">Everyday Menu</a>
+                <a href="track-order.html">Track Order</a>
+                <a href="index.html#about">About</a>
+                <a href="index.html#contact">Contact</a>
+                <a href="checkout.html" class="active cart-btn"><i class="fas fa-shopping-cart"></i> Cart <span id="cart-count"></span></a>
+            </div>
+            <div class="mobile-menu-btn"></div>
+        </div>
+    </nav>
+
+    <header class="checkout-header">
+        <div class="container">
+            <h1>Checkout</h1>
+        </div>
+    </header>
+
+    <section class="section" id="checkout-content">
+        <div class="container checkout-container">
+            <!-- Cart Section -->
+            <div class="cart-section">
+                <h2>Your Order</h2>
+                <div id="cart-items">
+                    <!-- Cart items injected here -->
+                </div>
+                <div class="cart-total">
+                    Total: ₹<span id="total-amount">0</span>
+                </div>
+            </div>
+
+            <!-- Payment Section -->
+            <div class="payment-section">
+                <h2>Delivery & Payment</h2>
+                <form id="checkout-form">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="cust-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="cust-phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Delivery Address</label>
+                        <input type="text" id="cust-address" required>
+                    </div>
+
+                    <h3 style="margin-top: 25px; margin-bottom: 15px;">Payment Method</h3>
+                    <div class="payment-methods">
+                        <div class="payment-method active" onclick="selectPayment('card', this)">
+                            <i class="fas fa-credit-card"></i> Card
+                        </div>
+                        <div class="payment-method" onclick="selectPayment('upi', this)">
+                            <i class="fas fa-mobile-alt"></i> UPI
+                        </div>
+                        <div class="payment-method" onclick="selectPayment('cod', this)">
+                            <i class="fas fa-money-bill"></i> COD
+                        </div>
+                    </div>
+
+                    <div id="card-details">
+                        <div class="form-group">
+                            <label>Card Number</label>
+                            <input type="text" placeholder="0000 0000 0000 0000">
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Expiry</label>
+                                <input type="text" placeholder="MM/YY">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>CVV</label>
+                                <input type="text" placeholder="123">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-pay" id="pay-btn">
+                        <span id="pay-text">Pay Now</span>
+                        <div class="spinner" id="pay-spinner"></div>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="success-section" style="display: none;">
+        <div class="container">
+            <div id="success-message">
+                <i class="fas fa-check-circle"></i>
+                <h2>Order Placed Successfully!</h2>
+                <p>Your Order ID is: <strong id="display-order-id"></strong></p>
+                <p style="margin-top: 20px;">
+                    <a id="track-order-link" href="#" class="btn btn-primary">Track Order</a>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        let cart = JSON.parse(localStorage.getItem('tiffinCart')) || [];
+        let selectedPayment = 'card';
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            container.innerHTML = '';
+            
+            if (cart.length === 0) {
+                container.innerHTML = '<p>Your cart is empty.</p>';
+                document.getElementById('pay-btn').disabled = true;
+                return;
+            }
+
+            let total = 0;
+            cart.forEach((item, index) => {
+                total += item.price * item.quantity;
+                container.innerHTML += `
+                    <div class="cart-item">
+                        <div>
+                            <h4>${item.name}</h4>
+                            <p>₹${item.price}</p>
+                        </div>
+                        <div class="cart-item-controls">
+                            <button class="qty-btn" type="button" onclick="updateQty(${index}, -1)">-</button>
+                            <span>${item.quantity}</span>
+                            <button class="qty-btn" type="button" onclick="updateQty(${index}, 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('total-amount').innerText = total;
+            document.getElementById('cart-count').innerText = `(${cart.reduce((s, i) => s + i.quantity, 0)})`;
+        }
+
+        function updateQty(index, change) {
+            cart[index].quantity += change;
+            if (cart[index].quantity <= 0) {
+                cart.splice(index, 1);
+            }
+            localStorage.setItem('tiffinCart', JSON.stringify(cart));
+            renderCart();
+        }
+
+        function selectPayment(method, element) {
+            selectedPayment = method;
+            document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('active'));
+            if (element) {
+                element.classList.add('active');
+            }
+            
+            const cardDetails = document.getElementById('card-details');
+            if (method === 'card') {
+                cardDetails.style.display = 'block';
+            } else {
+                cardDetails.style.display = 'none';
+            }
+        }
+
+        document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (cart.length === 0) return;
+
+            const btn = document.getElementById('pay-btn');
+            const btnText = document.getElementById('pay-text');
+            const spinner = document.getElementById('pay-spinner');
+
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            spinner.style.display = 'block';
+
+            const currentUser = JSON.parse(localStorage.getItem('tiffinUser') || 'null');
+            const customerDetails = {
+                name: document.getElementById('cust-name').value,
+                phone: document.getElementById('cust-phone').value,
+                address: document.getElementById('cust-address').value,
+                email: currentUser?.email || ''
+            };
+
+            const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            try {
+                // 1. Create Order
+                const orderRes = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: cart, totalAmount, customerDetails, userId: currentUser?.id })
+                });
+                const orderData = await orderRes.json();
+
+                if (orderData.success) {
+                    // 2. Process Payment
+                    const payRes = await fetch('/api/payment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderId: orderData.orderId, paymentMethod: selectedPayment })
+                    });
+                    const payData = await payRes.json();
+
+                    if (payData.success) {
+                        // Clear cart
+                        localStorage.removeItem('tiffinCart');
+                        cart = [];
+                        
+                        // Show success
+                        document.getElementById('checkout-content').style.display = 'none';
+                        document.getElementById('success-section').style.display = 'block';
+                        document.getElementById('display-order-id').innerText = orderData.orderId;
+                        // update track link with order id
+                        const trackLink = document.getElementById('track-order-link');
+                        if (trackLink) trackLink.href = `track-order.html?id=${encodeURIComponent(orderData.orderId)}`;
+                    } else {
+                        alert(payData.message);
+                    }
+                } else {
+                    alert(orderData.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('An error occurred during checkout.');
+            } finally {
+                btn.disabled = false;
+                btnText.style.display = 'block';
+                spinner.style.display = 'none';
+            }
+        });
+
+        // Initialize
+        renderCart();
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

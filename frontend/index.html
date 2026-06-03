@@ -21,16 +21,20 @@
                 <span>Tiffin Wallah</span>
             </a>
             <div class="nav-menu">
-                <a href="#home" class="active">Home</a>
-                <a href="#about">About</a>
-                <a href="#services">Services</a>
-                <a href="#process">Process</a>
-                <a href="#team">Our Team</a>
-                <a href="#contact">Contact</a>
-                <a href="login.html" class="btn btn-primary">Login/Signup</a>
+                <a href="index.html#home" class="active">Home</a>
+                <a href="menu.html">Everyday Menu</a>
+                <a href="track-order.html">Track Order</a>
+                <a href="index.html#about">About</a>
+                <a href="index.html#services">Services</a>
+                <a href="index.html#contact">Contact</a>
+                <a href="checkout.html" class="cart-btn"><i class="fas fa-shopping-cart"></i> Cart</a>
+                <a href="/login.html" class="account-btn"><i class="fas fa-user-circle"></i> <span class="account-label">Login/Signup</span></a>
             </div>
-            <div class="mobile-menu-btn"></div>
-        </div>
+            <div class="mobile-menu-btn" aria-label="Open menu" role="button" tabindex="0">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         </div>
     </nav>
 
@@ -568,7 +572,7 @@
                         <div class="contact-form-container">
                             <div class="contact-form">
                                 <h2>Send us a Message</h2>
-                                <form class="form">
+                                <form id="contact-form" class="form">
                                     <div class="form-row">
                                         <div class="form-group">
                                             <label for="contact-name">Full Name</label>

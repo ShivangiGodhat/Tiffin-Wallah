@@ -10,6 +10,7 @@ body {
     line-height: 1.6;
     color: #333;
     background-color: #fefefe;
+    padding-top: 70px;
 }
 
 /* Theme variables */
@@ -1637,16 +1638,18 @@ html {
             justify-content: space-between;
             align-items: center;
             height: 70px;
+            gap: 1rem;
         }
         
         .nav-logo {
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 1.5rem;
+            font-size: 1.35rem;
             font-weight: 700;
             color: var(--color-accent);
             text-decoration: none;
+            min-width: 190px;
         }
 
         /* Shadow for brand name */
@@ -1665,7 +1668,9 @@ html {
             list-style: none;
             margin: 0;
             padding: 0;
-            gap: 2rem;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
         }
         
         .nav-menu a {
@@ -1673,11 +1678,27 @@ html {
             color: #333;
             font-weight: 500;
             font-size: 0.95rem;
-            padding: 10px 16px;
+            padding: 10px 14px;
             border-radius: 10px;
             transition: color 0.25s ease, background-color 0.25s ease, transform 0.15s ease;
             position: relative;
             outline: none;
+        }
+
+        .nav-menu a.cart-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(14, 165, 233, 0.12);
+            color: var(--color-primary);
+            padding: 10px 14px;
+        }
+
+        .nav-menu a.btn-primary {
+            padding: 10px 18px;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-2));
+            color: white;
+            box-shadow: 0 6px 18px rgba(14, 165, 233, 0.25);
         }
         
         .nav-menu a:hover {
@@ -1704,6 +1725,28 @@ html {
             transition: width 0.25s ease;
         }
 
+        /* Account button styling */
+        .account-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #333;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .account-btn .account-label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .account-btn.logged-in {
+            background: rgba(14,165,233,0.10);
+            color: var(--color-primary);
+        }
+
         .nav-menu a:hover::after,
         .nav-menu a.active::after {
             width: 60%;
@@ -1718,6 +1761,8 @@ html {
             flex-direction: column;
             cursor: pointer;
             padding: 5px;
+            justify-content: space-between;
+            height: 22px;
         }
         
         .mobile-menu-btn span {

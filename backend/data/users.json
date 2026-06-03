@@ -1,0 +1,25 @@
+[
+  {
+    "id": "admin-1",
+    "firstname": "Admin",
+    "lastname": "User",
+    "email": "admin@tiffin.com",
+    "mobile": "0000000000",
+    "passwordHash": "$2a$10$RurcoD2vrdIBiqIZ7/bHFOjWqcBpu2GOf1yfBYAWAmTcplvUKepDu",
+    "address": "Head Office",
+    "dietary": "None",
+    "role": "admin",
+    "createdAt": "2026-06-03T09:05:37.262Z"
+  },
+  {
+    "id": "1780474515279",
+    "firstname": "Godhat",
+    "lastname": "Himmatbhai",
+    "email": "shivangigodhat12@gmail.com",
+    "mobile": "9624563962",
+    "passwordHash": "$2a$10$JKWYwlxEVPqvlQ6oVzNdvumw99hj6YUh3ryhK7W62mUzkTLg7cMv2",
+    "address": "At : jaliya Ta, district: Amreli chaklichock, sanosara road",
+    "dietary": "None",
+    "createdAt": "2026-06-03T08:15:15.279Z"
+  }
+]

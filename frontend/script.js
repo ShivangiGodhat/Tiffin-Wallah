@@ -1,23 +1,47 @@
 // Mobile Navigation Toggle
 document.addEventListener('DOMContentLoaded', function() {
-    const hamburger = document.querySelector('.hamburger');
-    const nav = document.querySelector('.nav');
+    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+    const navMenu = document.querySelector('.nav-menu');
     
-    if (hamburger && nav) {
-        hamburger.addEventListener('click', function() {
-            nav.classList.toggle('active');
-            hamburger.classList.toggle('active');
+    if (mobileMenuBtn && navMenu) {
+        mobileMenuBtn.addEventListener('click', function() {
+            mobileMenuBtn.classList.toggle('active');
+            navMenu.classList.toggle('active');
         });
     }
 
     // Close mobile menu when clicking on a link
-    const navLinks = document.querySelectorAll('.nav-list a');
+    const navLinks = document.querySelectorAll('.nav-menu a');
     navLinks.forEach(link => {
         link.addEventListener('click', function() {
-            nav.classList.remove('active');
-            hamburger.classList.remove('active');
+            if (navMenu) navMenu.classList.remove('active');
+            if (mobileMenuBtn) mobileMenuBtn.classList.remove('active');
         });
     });
+
+    // Account button: update label/href when user is logged in
+    const accountBtn = document.querySelector('.account-btn');
+    if (accountBtn) {
+        try {
+            const user = JSON.parse(localStorage.getItem('tiffinUser'));
+            const label = accountBtn.querySelector('.account-label');
+            if (user) {
+                accountBtn.href = '/dashboard.html';
+                if (label) label.textContent = user.firstname || user.email || 'Account';
+                accountBtn.classList.add('logged-in');
+
+                if (user.role === 'admin') {
+                    document.querySelectorAll('a[href="track-order.html"]').forEach(el => el.remove());
+                    document.querySelectorAll('a[href="checkout.html"]').forEach(el => el.remove());
+                }
+            } else {
+                accountBtn.href = '/login.html';
+                if (label) label.textContent = 'Login/Signup';
+            }
+        } catch (e) {
+            console.warn('Error reading account from storage', e);
+        }
+    }
 
     // FAQ Accordion Functionality
     const faqItems = document.querySelectorAll('.faq-item');
@@ -77,10 +101,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : window.location.origin;
+
     // Form Validation and Submission
     const forms = document.querySelectorAll('.form');
     forms.forEach(form => {
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             // Basic form validation
@@ -97,12 +123,95 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            if (isValid) {
-                // Show success message
+            if (!isValid) {
+                showNotification('Please fill in all required fields.', 'error');
+                return;
+            }
+
+            const authFormContainer = form.closest('.auth-form');
+            const isLogin = authFormContainer && authFormContainer.id === 'login-form';
+            const isSignup = authFormContainer && authFormContainer.id === 'signup-form';
+            const isContact = form.id === 'contact-form';
+
+            let endpoint = null;
+            let payload = {};
+
+            if (isLogin) {
+                endpoint = '/api/login';
+                payload = {
+                    email: form.querySelector('#login-email')?.value.trim(),
+                    password: form.querySelector('#login-password')?.value.trim()
+                };
+            } else if (isSignup) {
+                const passwordValue = form.querySelector('#signup-password')?.value.trim();
+                const confirmPasswordValue = form.querySelector('#signup-confirm-password')?.value.trim();
+
+                if (passwordValue !== confirmPasswordValue) {
+                    showNotification('Passwords do not match. Please check and try again.', 'error');
+                    return;
+                }
+
+                endpoint = '/api/signup';
+                payload = {
+                    firstname: form.querySelector('#signup-firstname')?.value.trim(),
+                    lastname: form.querySelector('#signup-lastname')?.value.trim(),
+                    email: form.querySelector('#signup-email')?.value.trim(),
+                    mobile: form.querySelector('#signup-mobile')?.value.trim(),
+                    password: passwordValue,
+                    address: form.querySelector('#signup-address')?.value.trim(),
+                    dietary: form.querySelector('#signup-dietary')?.value
+                };
+            } else if (isContact) {
+                endpoint = '/api/contact';
+                payload = {
+                    name: form.querySelector('#contact-name')?.value.trim(),
+                    email: form.querySelector('#contact-email')?.value.trim(),
+                    phone: form.querySelector('#contact-phone')?.value.trim(),
+                    subject: form.querySelector('#contact-subject')?.value,
+                    message: form.querySelector('#contact-message')?.value.trim()
+                };
+            } else {
                 showNotification('Form submitted successfully!', 'success');
                 form.reset();
-            } else {
-                showNotification('Please fill in all required fields.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showNotification(result.message || 'Form submitted successfully!', 'success');
+
+                    if (isLogin) {
+                        // persist logged-in user and redirect to dashboard
+                        try {
+                            if (result.user) {
+                                localStorage.setItem('tiffinUser', JSON.stringify(result.user));
+                            }
+                        } catch (e) {
+                            console.warn('Could not persist user to localStorage', e);
+                        }
+
+                        setTimeout(() => {
+                            window.location.href = '/dashboard.html';
+                        }, 800);
+                    } else {
+                        form.reset();
+                    }
+                } else {
+                    showNotification(result.message || 'Something went wrong. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Form submit error:', error);
+                showNotification('Unable to connect to the server. Please try again later.', 'error');
             }
         });
     });

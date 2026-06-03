@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order - Tiffin Wallah</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .track-header {
+            padding: 150px 0 50px;
+            text-align: center;
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+        }
+        .track-header h1 {
+            font-size: 3rem;
+            color: #00838f;
+            margin-bottom: 10px;
+        }
+        .track-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transform: translateY(-30px);
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .search-box input:focus {
+            border-color: #00838f;
+        }
+        .search-box button {
+            background: #00838f;
+            color: #fff;
+            border: none;
+            padding: 0 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .search-box button:hover {
+            background: #006064;
+        }
+
+        .timeline {
+            display: none; /* Hidden until search */
+            position: relative;
+            padding-left: 30px;
+            margin-top: 30px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #eee;
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 30px;
+        }
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #eee;
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 2px #eee;
+            z-index: 1;
+        }
+        .timeline-item.active::before {
+            background: #00838f;
+            box-shadow: 0 0 0 2px #00838f;
+        }
+        .timeline-item.completed::before {
+            background: #00838f;
+            box-shadow: 0 0 0 2px #00838f;
+        }
+        .timeline-content h4 {
+            margin: 0 0 5px;
+            color: #333;
+        }
+        .timeline-content p {
+            margin: 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        .timeline-item.active .timeline-content h4 {
+            color: #00838f;
+        }
+        
+        .order-details {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed #ddd;
+            display: none;
+        }
+        #error-msg {
+            color: #e74c3c;
+            text-align: center;
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-scroll">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <i class="fas fa-utensils"></i>
+                <span>Tiffin Wallah</span>
+            </a>
+            <div class="nav-menu">
+                <a href="index.html">Home</a>
+                <a href="menu.html">Everyday Menu</a>
+                <a href="track-order.html" class="active">Track Order</a>
+                <a href="index.html#about">About</a>
+                <a href="index.html#contact">Contact</a>
+                <a href="checkout.html" class="cart-btn"><i class="fas fa-shopping-cart"></i> Cart <span id="cart-count"></span></a>
+            </div>
+            <div class="mobile-menu-btn"></div>
+        </div>
+    </nav>
+
+    <header class="track-header">
+        <div class="container">
+            <h1>Track Your Order</h1>
+            <p>Enter your Order ID to see live status updates.</p>
+        </div>
+    </header>
+
+    <section class="section" style="padding-top: 0;">
+        <div class="container">
+            <div class="track-container">
+                <div class="search-box">
+                    <input type="text" id="order-id-input" placeholder="e.g. ORD-123456" />
+                    <button onclick="trackOrder()">Track</button>
+                </div>
+                
+                <div id="error-msg">Order not found. Please check your Order ID.</div>
+
+                <div class="timeline" id="timeline">
+                    <div class="timeline-item" id="status-pending">
+                        <div class="timeline-content">
+                            <h4>Order Placed</h4>
+                            <p>We have received your order.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item" id="status-preparing">
+                        <div class="timeline-content">
+                            <h4>Preparing</h4>
+                            <p>Chef is preparing your delicious meal.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item" id="status-out">
+                        <div class="timeline-content">
+                            <h4>Out for Delivery</h4>
+                            <p>Your meal is on the way.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item" id="status-delivered">
+                        <div class="timeline-content">
+                            <h4>Delivered</h4>
+                            <p>Enjoy your home-cooked meal!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-details" id="order-details">
+                    <h3>Order Details</h3>
+                    <p><strong>Total Amount:</strong> ₹<span id="detail-total"></span></p>
+                    <p><strong>Customer:</strong> <span id="detail-name"></span></p>
+                    <p><strong>Delivery Address:</strong> <span id="detail-address"></span></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Update cart count
+        let cart = JSON.parse(localStorage.getItem('tiffinCart')) || [];
+        const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+        document.getElementById('cart-count').innerText = count > 0 ? `(${count})` : '';
+
+        // Check if order ID is in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderIdParam = urlParams.get('id');
+        if (orderIdParam) {
+            document.getElementById('order-id-input').value = orderIdParam;
+            trackOrder();
+        }
+
+        async function trackOrder() {
+            let orderId = document.getElementById('order-id-input').value.trim();
+            if (!orderId) {
+                const errorMsg = document.getElementById('error-msg');
+                errorMsg.innerText = 'Please enter a valid Order ID.';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            orderId = orderId.toUpperCase();
+            const errorMsg = document.getElementById('error-msg');
+            const timeline = document.getElementById('timeline');
+            const orderDetails = document.getElementById('order-details');
+
+            errorMsg.style.display = 'none';
+            timeline.style.display = 'none';
+            orderDetails.style.display = 'none';
+
+            try {
+                const res = await fetch(`/api/orders/${orderId}`);
+                const data = await res.json();
+
+                if (data.success) {
+                    const order = data.order;
+                    
+                    // Reset timeline
+                    document.querySelectorAll('.timeline-item').forEach(el => {
+                        el.classList.remove('active', 'completed');
+                    });
+
+                    // Set status
+                    const statuses = ['Pending', 'Preparing', 'Out for Delivery', 'Delivered'];
+                    const statusIds = ['status-pending', 'status-preparing', 'status-out', 'status-delivered'];
+                    
+                    const currentIndex = statuses.indexOf(order.status);
+                    
+                    if (currentIndex >= 0) {
+                        for(let i=0; i<=currentIndex; i++) {
+                            const el = document.getElementById(statusIds[i]);
+                            if (i === currentIndex) {
+                                el.classList.add('active');
+                            } else {
+                                el.classList.add('completed');
+                            }
+                        }
+                    }
+
+                    // Set details
+                    document.getElementById('detail-total').innerText = order.totalAmount;
+                    document.getElementById('detail-name').innerText = order.customerDetails.name;
+                    document.getElementById('detail-address').innerText = order.customerDetails.address;
+
+                    timeline.style.display = 'block';
+                    orderDetails.style.display = 'block';
+                } else {
+                    errorMsg.style.display = 'block';
+                }
+            } catch (error) {
+                console.error(error);
+                errorMsg.innerText = 'Server error. Please try again later.';
+                errorMsg.style.display = 'block';
+            }
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
